@@ -5,6 +5,7 @@ import userSchema from "../models/user"
 import errors from "../utils/error";
 import { IssueJwtToken } from "../utils/jwt";
 import isInvalidBody from "../utils/isInvalidBody"
+import { comparePassword, hashPassword } from "../utils/password";
 
 const authRouter = express.Router();
 
@@ -58,7 +59,7 @@ authRouter.post("/signIn",
         }
 
         // 401 아이디에 해당하는 패스워드가 일치하지 않는 경우
-        if (user.password !== password) {
+        if (!(await comparePassword(password, user.password))) {
             res.status(401).json({ error: PasswordIsNotCorrect });
             return;
         }
