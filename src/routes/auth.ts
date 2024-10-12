@@ -3,6 +3,7 @@ import { model } from "mongoose";
 import userSchema from "../models/user"
 
 import errors from "../utils/error";
+import { IssueJwtToken } from "../utils/jwt";
 import isInvalidBody from "../utils/isInvalidBody"
 
 const authRouter = express.Router();
@@ -32,19 +33,16 @@ interface signInBody {
 authRouter.post("/signIn",
     async (req, res) => {
         const { id, password }: signInBody = req.body;
-        const {InputIsEmpty, InputIsInvalid, UserDoesNotExist, PasswordIsNotCorrect } = errors;
-        
+        const { InputIsEmpty, InputIsInvalid, UserDoesNotExist, PasswordIsNotCorrect } = errors;
+
         // 400 아이디나 비밀번호가 비어있는가?
         if (isInvalidBody(id, password)) {
-            res.statusCode = 400
-            res.send(InputIsEmpty);
-            return;
+            res.status(400).json({ error: InputIsEmpty });
         }
 
         // 400 아이디나 비밀번호가 정책에 맞지 않는 경우
         if (id.length < 6 || password.length < 6 || password.search(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])[^  |\n]+$/gm) == -1) {
-            res.statusCode = 400
-            res.send(InputIsInvalid);
+            res.status(400).json({ error: InputIsInvalid });
             return;
         }
 
@@ -55,21 +53,27 @@ authRouter.post("/signIn",
 
         // 401 일치하는 아이디가 없는 경우
         if (user === null) {
-            res.statusCode = 401
-            res.send(UserDoesNotExist)
+            res.status(401).json({ error: UserDoesNotExist });
             return;
         }
 
         // 401 아이디에 해당하는 패스워드가 일치하지 않는 경우
         if (user.password !== password) {
-            res.statusCode = 401;
-            res.send(PasswordIsNotCorrect)
+            res.status(401).json({ error: PasswordIsNotCorrect });
             return;
         }
 
-        // jwt 생성 및 반환
-        
-        res.send("signIn")
+        // jwt 생성
+        const accessToken = IssueJwtToken("accessToken", {
+            id,
+            email: user.email
+        });
+        const refreshToken = IssueJwtToken("refreshToken");
+
+        res.json({
+            accessToken,
+            refreshToken
+        })
     }
 )
 
