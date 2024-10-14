@@ -39,6 +39,7 @@ authRouter.post("/signIn",
         // 400 아이디나 비밀번호가 비어있는가?
         if (isInvalidBody(id, password)) {
             res.status(400).json({ error: InputIsEmpty });
+            return;
         }
 
         // 400 아이디나 비밀번호가 정책에 맞지 않는 경우
