@@ -27,11 +27,11 @@ jobs:
           chmod 600 private_key
 
           # 서버에 SSH 연결하여 git pull 수행
-          ssh -i private_key -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP 'pgrep -f "./dist/app.js" | xargs kill -9;
-          cd /home/ubuntu/dunzae.github.io-backend &&
+          ssh -i private_key -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP 'cd /home/ubuntu/dunzae.github.io-backend &&
           git pull &&
           npm install &&
           npm run build &&
+          pgrep -f "node ./dist/app.js" | xargs -r kill -9 &&
           nohup npm run start &
           '
 
