@@ -23,6 +23,8 @@ jobs:
           SERVER_IP : ${{ vars.SERVER_IP }}
         run: |
           # SSH 설정을 위해 개인 키를 파일로 저장
+          touch ~/.ssh/config
+          echo "UserKnownHostsFile ~/.ssh/known_hosts" >> ~/.ssh/config
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
