@@ -13,13 +13,13 @@ app.use(express.json());
 app.use(express.static("files"));
 app.use(express.urlencoded({extended : true}));
 
-app.use("/api", router);
+app.use("/", router);
 
 async function main() {
   try {
     const con = await connectDb(MONGO_URI as string);
     app.listen(PORT, () => {
-      console.log(`Example app listening on port ${PORT}`)
+      console.log(`app listening on port ${PORT}`)
     })
   } catch(e) {
     console.log(e);
