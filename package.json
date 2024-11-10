@@ -4,7 +4,8 @@
   "main": "./src/app.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon",
-    "build": "cross-env NODE_ENV=production tsc --build"
+    "build": "cross-env NODE_ENV=production tsc --build",
+    "start" : "node ./dist/app.js"
   },
   "author": "",
   "license": "ISC",
