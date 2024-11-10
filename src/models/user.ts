@@ -1,4 +1,5 @@
 import {Schema} from "mongoose";
+import { hashPassword } from "../utils/password";
 
 export interface IUserSchema {
     id : string,
@@ -24,6 +25,11 @@ const UserSchema = new Schema<IUserSchema>({
         type : String,
         required : true
     }
+})
+
+UserSchema.pre("save", async function (next) {
+    this.password = await hashPassword(this.password);
+    next();
 })
 
 export default UserSchema;
