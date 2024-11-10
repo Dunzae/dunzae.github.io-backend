@@ -25,11 +25,10 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-          ssh -i private_key -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP 'cd /home/ubuntu/dunzae.github.io-backend &&
+          ssh -i private_key -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP 'pgrep -f "node ./dist/app.js" | xargs -r kill -9; cd /home/ubuntu/dunzae.github.io-backend && 
           git pull &&
           npm install &&
           npm run build &&
-          pgrep -f "node ./dist/app.js" | xargs -r kill -9 &&
           nohup npm run start &
           '
 
