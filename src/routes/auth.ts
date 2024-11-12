@@ -6,6 +6,7 @@ import errors from "../utils/error";
 import { IssueJwtToken, verifyJwtToken } from "../utils/jwt";
 import isInvalidBody from "../utils/isInvalidBody"
 import { comparePassword, hashPassword } from "../utils/password";
+import { JwtPayload } from "jsonwebtoken";
 
 const authRouter = express.Router();
 
@@ -70,7 +71,9 @@ authRouter.post("/signIn",
             id,
             email: user.email
         });
-        const refreshToken = IssueJwtToken("refreshToken");
+        const refreshToken = IssueJwtToken("refreshToken", {
+            id
+        });
 
         res.json({
             accessToken,
@@ -158,28 +161,51 @@ authRouter.post("/signUp",
     @body accessToken string
     @body refreshToken string
     @status 
-    - 200 
+    - 200 {
+        accessToken string
+    }
     - 400 The token is empty 토큰이 비었을 경우
+    - 400 User does not exist 해당 토큰을 발급한 사용자가 존재하지 않을 경우
     - 401 The token is invalid 토큰이 유효하지 않을 때
+    - 500 Unknown Error 알 수 없는 오류가 발생했을 경우
 */
 authRouter.post("/check",
     async (req, res) => {
-        const { TokenIsEmpty, TokenIsInvalid } = errors;
-        const token = req.headers.authorization?.split("Bearer ")[1];
+        const { TokenIsEmpty, TokenIsInvalid, UserDoesNotExist, UnknownError } = errors;
+        const { accessToken, refreshToken } = req.body;
 
-        if (!token) {
+        if (isInvalidBody(accessToken, refreshToken)) {
             res.status(400).json({ error: TokenIsEmpty });
             return;
         }
 
         try {
-            const payload = verifyJwtToken(token);
-            res.sendStatus(200);
-        } catch (e) {
-            res.status(401).json({ error: TokenIsInvalid })
-            return;
-        }
+            if (verifyJwtToken(accessToken) === false) {
+                const decodedJwt = verifyJwtToken(refreshToken);
+                if (decodedJwt === false) {
+                    res.status(400).json({ error: TokenIsInvalid });
+                    return;
+                }
 
+                const { id } = decodedJwt as JwtPayload;
+                const userModel = model("user", userSchema);
+                const user = await userModel.findOne({ id });
+
+                if (user === null) {
+                    res.status(401).json({ error: UserDoesNotExist })
+                    return;
+                }
+
+                const newAccessToken = IssueJwtToken("accessToken", { id: user.id, email: user.email })
+
+                res.json({accessToken : newAccessToken, refreshToken});
+            } else {
+                res.json({ accessToken, refreshToken });
+            }
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({error : UnknownError})
+        }
     }
 )
 
