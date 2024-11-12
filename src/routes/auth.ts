@@ -3,7 +3,7 @@ import { model } from "mongoose";
 import userSchema from "../models/user"
 
 import errors from "../utils/error";
-import { IssueJwtToken } from "../utils/jwt";
+import { IssueJwtToken, verifyJwtToken } from "../utils/jwt";
 import isInvalidBody from "../utils/isInvalidBody"
 import { comparePassword, hashPassword } from "../utils/password";
 
@@ -138,7 +138,9 @@ authRouter.post("/signUp",
                 id,
                 email
             });
-            const refreshToken = IssueJwtToken("refreshToken");
+            const refreshToken = IssueJwtToken("refreshToken", {
+                id
+            });
 
             res.json({
                 accessToken,
@@ -151,9 +153,33 @@ authRouter.post("/signUp",
     }
 )
 
+/* 토큰 확인하기 API
+    @Method POST
+    @body accessToken string
+    @body refreshToken string
+    @status 
+    - 200 
+    - 400 The token is empty 토큰이 비었을 경우
+    - 401 The token is invalid 토큰이 유효하지 않을 때
+*/
 authRouter.post("/check",
     async (req, res) => {
-        res.send("check")
+        const { TokenIsEmpty, TokenIsInvalid } = errors;
+        const token = req.headers.authorization?.split("Bearer ")[1];
+
+        if (!token) {
+            res.status(400).json({ error: TokenIsEmpty });
+            return;
+        }
+
+        try {
+            const payload = verifyJwtToken(token);
+            res.sendStatus(200);
+        } catch (e) {
+            res.status(401).json({ error: TokenIsInvalid })
+            return;
+        }
+
     }
 )
 
