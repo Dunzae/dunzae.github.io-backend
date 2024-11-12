@@ -5,3 +5,9 @@ export function IssueJwtToken(type: "accessToken" | "refreshToken", payload?: an
 
     return jwt.sign(payload ?? {}, secretKey, type === "accessToken" ? { expiresIn: '1h' } : { expiresIn: '1d' });
 }
+
+export function verifyJwtToken(token : string) {
+    const secretKey = process.env.SECRET_KEY as string;
+
+    return jwt.verify(token, secretKey);
+}
