@@ -2,11 +2,20 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import router from "./routes"
+import http from "http";
+import https from "https";
+import fs from "fs";
 import connectDb from "./connectDb"
 
 dotenv.config({path : `.env.${process.env.NODE_ENV}`});
 const app = express();
-const {PORT, MONGO_URI} = process.env;
+const {MONGO_URI} = process.env;
+
+const options = {
+  key: fs.readFileSync('./privkey.pem'),
+  cert: fs.readFileSync('./cert.pem'),
+  ca: fs.readFileSync('./chain.pem'),
+};
 
 app.use(cors());
 app.use(express.json());
@@ -18,13 +27,17 @@ app.use("/", router);
 async function main() {
   try {
     const con = await connectDb(MONGO_URI as string);
-    app.listen(PORT, () => {
-      console.log(`app listening on port ${PORT}`)
+    https.createServer(options, app).listen(443, () => {
+      console.log(`app listening on port 443`)
     })
+
+    http.createServer((req, res) => {
+      res.writeHead(301, { "Location": `https://${req.headers.host}${req.url}` });
+      res.end();
+    }).listen(80);
   } catch(e) {
     console.log(e);
   }
-
 }
-
 main();
+
