@@ -7,9 +7,9 @@ import https from "https";
 import fs from "fs";
 import connectDb from "./connectDb"
 
-dotenv.config({path : `.env.${process.env.NODE_ENV}`});
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 const app = express();
-const {MONGO_URI} = process.env;
+const { MONGO_URI } = process.env;
 
 const options = {
   key: fs.readFileSync('./privkey.pem'),
@@ -20,7 +20,7 @@ const options = {
 app.use(cors());
 app.use(express.json());
 app.use(express.static("files"));
-app.use(express.urlencoded({extended : true}));
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/", router);
 
@@ -35,9 +35,25 @@ async function main() {
       res.writeHead(301, { "Location": `https://${req.headers.host}${req.url}` });
       res.end();
     }).listen(80);
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
 }
-main();
+
+async function devMain() {
+  try {
+    const con = await connectDb(MONGO_URI as string);
+    app.listen(80, () => {
+      console.log(`app listening on port 80`)
+    })
+
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+if(process.env.NODE_ENV === "production") main();
+else {
+  devMain();
+}
 
