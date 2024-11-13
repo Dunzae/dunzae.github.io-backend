@@ -7,6 +7,7 @@ export interface IPoshSchema {
         people : [Schema.Types.ObjectId]
     },
     body : string,
+    thumbnail? : string,
 }
 
 const PostSchema = new Schema<IPoshSchema>({
@@ -27,5 +28,9 @@ const PostSchema = new Schema<IPoshSchema>({
     body: {
         type: String,
         default: ""
+    },
+    thumbnail : {
+        type : String,
+        required : false,
     }
 })
