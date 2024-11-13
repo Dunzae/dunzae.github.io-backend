@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 
 export interface IPoshSchema {
-    author : Schema.Types.ObjectId,
+    author : string,
     like : {
         num : number,
         people : [Schema.Types.ObjectId]
@@ -12,7 +12,7 @@ export interface IPoshSchema {
 
 const PostSchema = new Schema<IPoshSchema>({
     author: {
-        type: Schema.Types.ObjectId,
+        type: String,
         required: true,
     },
     like: {
@@ -31,6 +31,7 @@ const PostSchema = new Schema<IPoshSchema>({
     },
     thumbnail : {
         type : String,
+        default : undefined,
         required : false,
     }
 })
