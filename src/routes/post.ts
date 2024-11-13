@@ -13,6 +13,7 @@ const postRouter = express.Router();
 @body thumbnail file
 @status 
 - 200 Ok
+- 400 Title is empty 제목이 비어있습니다.
 - 500 Unknown Error 알 수 없는 오류가 발생했을 경우
 */
 interface uploadBody {
@@ -29,22 +30,28 @@ const storage = multer.diskStorage({
         const temp = file.originalname.split('.')
         const ext = temp[temp.length - 1]
 
-        cb(null, name+'.'+ext)
+        cb(null, name + '.' + ext)
     }
 })
 const upload = multer({ storage });
 
 postRouter.post("/upload", upload.single("thumbnail"), async (req: Request, res: Response) => {
     const thumbnail = req.file?.filename;
-    const { body } = req.body;
-    const { UnknownError } = errors;
+    const { title, body } = req.body;
+    const { UnknownError, TitleIsEmpty } = errors;
+
+    if (title === undefined) {
+        res.status(400).json({ error: TitleIsEmpty })
+        return;
+    }
 
     try {
         const postModel = model("post", PostSchema);
         await new postModel({
             author: req.user.id,
+            title,
             body,
-            thumbnail 
+            thumbnail
         }).save()
 
         res.sendStatus(200);
