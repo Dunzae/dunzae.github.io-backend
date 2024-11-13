@@ -6,7 +6,7 @@ export interface IPoshSchema {
         num : number,
         people : [Schema.Types.ObjectId]
     },
-    body : string,
+    body? : string,
     thumbnail? : string,
 }
 
