@@ -6,7 +6,7 @@ export function IssueJwtToken(type: "accessToken" | "refreshToken", payload?: an
     return jwt.sign(
         { ...payload }, 
         secretKey, 
-        type === "accessToken" ? { expiresIn: '1s' } : { expiresIn: '1d' }
+        type === "accessToken" ? { expiresIn: '1h' } : { expiresIn: '1d' }
     );
 }
 
