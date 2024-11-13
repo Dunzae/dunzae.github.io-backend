@@ -34,3 +34,5 @@ const PostSchema = new Schema<IPoshSchema>({
         required : false,
     }
 })
+
+export default PostSchema;
