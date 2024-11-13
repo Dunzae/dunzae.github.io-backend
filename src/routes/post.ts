@@ -21,13 +21,15 @@ interface uploadBody {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '/public/images/thumbnails')
+        cb(null, 'public/images/thumbnails')
     },
     filename: function (req, file, cb) {
         const shasum = crypto.createHash("sha1");
         const name = shasum.update(file.fieldname + Date.now()).digest("hex");
+        const temp = file.originalname.split('.')
+        const ext = temp[temp.length - 1]
 
-        cb(null, name)
+        cb(null, name+'.'+ext)
     }
 })
 const upload = multer({ storage });
