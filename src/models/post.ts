@@ -1,13 +1,14 @@
 import { Schema } from "mongoose";
 
 export interface IPoshSchema {
-    author : string,
-    like : {
-        num : number,
-        people : [Schema.Types.ObjectId]
+    author: string,
+    like: {
+        num: number,
+        people: [Schema.Types.ObjectId]
     },
-    body? : string,
-    thumbnail? : string,
+    title: string,
+    body?: string,
+    thumbnail?: string,
 }
 
 const PostSchema = new Schema<IPoshSchema>({
@@ -25,14 +26,18 @@ const PostSchema = new Schema<IPoshSchema>({
             default: []
         }
     },
+    title: {
+        type: String,
+        required: true,
+    },
     body: {
         type: String,
         default: ""
     },
-    thumbnail : {
-        type : String,
-        default : undefined,
-        required : false,
+    thumbnail: {
+        type: String,
+        default: undefined,
+        required: false,
     }
 })
 
