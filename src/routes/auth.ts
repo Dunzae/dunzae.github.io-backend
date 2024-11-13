@@ -1,11 +1,10 @@
 import express from "express";
 import { model } from "mongoose";
-import userSchema from "../models/user"
-
-import errors from "../utils/error";
-import { IssueJwtToken, verifyJwtToken } from "../utils/jwt";
-import isInvalidBody from "../utils/isInvalidBody"
-import { comparePassword, hashPassword } from "../utils/password";
+import userSchema from "@models/user"
+import errors from "@utils/error";
+import { IssueJwtToken, verifyJwtToken } from "@utils/jwt";
+import isInvalidBody from "@utils/isInvalidBody"
+import { comparePassword } from "@utils/password";
 import { JwtPayload } from "jsonwebtoken";
 
 const authRouter = express.Router();

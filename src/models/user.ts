@@ -1,5 +1,5 @@
 import {Schema} from "mongoose";
-import { hashPassword } from "../utils/password";
+import { hashPassword } from "@utils/password";
 
 export interface IUserSchema {
     id : string,
