@@ -26,7 +26,6 @@ jobs:
           chmod 600 private_key
 
           ssh -i private_key -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP './start.sh'
-          '
-
+          
           # 사용 후 개인 키 파일 삭제
           rm private_key
