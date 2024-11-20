@@ -9,6 +9,7 @@ export interface IPoshSchema {
     title: string,
     body?: string,
     thumbnail?: string,
+    createDate : Date,
 }
 
 const PostSchema = new Schema<IPoshSchema>({
@@ -38,6 +39,10 @@ const PostSchema = new Schema<IPoshSchema>({
         type: String,
         default: undefined,
         required: false,
+    },
+    createDate : {
+        type : Date,
+        default : Date.now,
     }
 })
 
