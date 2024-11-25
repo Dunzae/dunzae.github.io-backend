@@ -7,6 +7,7 @@ import PostSchema from "@models/post";
 import isInvalidBody from "@utils/isInvalidBody";
 import checkMiddleware from "@middlewares/check";
 import { stripHtml } from "string-strip-html";
+import commentRouter from "./comment";
 
 const postRouter = express.Router();
 
@@ -42,68 +43,20 @@ postRouter.get("/", async (req: Request<{}, {}, {}, GetPostQueryProps>, res) => 
         }
 
         res.json({
-            author : post.author,
-            title : post.title,
-            body : post.body,
-            likeNum : post.like.num,
-            thumbnail : post.thumbnail,
-            createDate : post.createDate
+            author: post.author,
+            title: post.title,
+            body: post.body,
+            likeNum: post.like.num,
+            comments : post.comments.map(comment => ({
+                author : comment.author,
+                content : comment.content,
+                createDate : comment.createDate
+            })),
+            thumbnail: post.thumbnail,
+            createDate: post.createDate
         })
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: UnknownError })
-    }
-})
-
-/* 포스트 업로드 API
-    @Method POST
-    @body body string
-    @body thumbnail file
-    @status 
-    - 200 Ok
-    - 400 Title is empty 제목이 비어있습니다.
-    - 500 Unknown Error 알 수 없는 오류가 발생했을 경우
-*/
-interface uploadBody {
-    body: string;
-}
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'public/images/thumbnails')
-    },
-    filename: function (req, file, cb) {
-        const shasum = crypto.createHash("sha1");
-        const name = shasum.update(file.fieldname + Date.now()).digest("hex");
-        const temp = file.originalname.split('.')
-        const ext = temp[temp.length - 1]
-
-        cb(null, name + '.' + ext)
-    }
-})
-const upload = multer({ storage });
-
-postRouter.post("/upload", checkMiddleware, upload.single("thumbnail"), async (req: Request, res: Response) => {
-    const thumbnail = req.file?.filename;
-    const { title, body } = req.body;
-    const { UnknownError, TitleIsEmpty } = errors;
-
-    if (title === undefined) {
-        res.status(400).json({ error: TitleIsEmpty })
-        return;
-    }
-
-    try {
-        const postModel = model("post", PostSchema);
-        await new postModel({
-            author: req.user.id,
-            title,
-            body,
-            thumbnail
-        }).save()
-
-        res.sendStatus(200);
-    } catch (e) {
         res.status(500).json({ error: UnknownError })
     }
 })
@@ -163,5 +116,60 @@ postRouter.get("/getList", async (req: Request<{}, {}, {}, getListQuery>, res) =
     }
 
 })
+
+/* 포스트 업로드 API
+    @Method POST
+    @body body string
+    @body thumbnail file
+    @status 
+    - 200 Ok
+    - 400 Title is empty 제목이 비어있습니다.
+    - 500 Unknown Error 알 수 없는 오류가 발생했을 경우
+*/
+interface uploadBody {
+    body: string;
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images/thumbnails')
+    },
+    filename: function (req, file, cb) {
+        const shasum = crypto.createHash("sha1");
+        const name = shasum.update(file.fieldname + Date.now()).digest("hex");
+        const temp = file.originalname.split('.')
+        const ext = temp[temp.length - 1]
+
+        cb(null, name + '.' + ext)
+    }
+})
+const upload = multer({ storage });
+
+postRouter.post("/upload", checkMiddleware, upload.single("thumbnail"), async (req: Request, res: Response) => {
+    const thumbnail = req.file?.filename;
+    const { title, body } = req.body;
+    const { UnknownError, TitleIsEmpty } = errors;
+
+    if (title === undefined) {
+        res.status(400).json({ error: TitleIsEmpty })
+        return;
+    }
+
+    try {
+        const postModel = model("post", PostSchema);
+        await new postModel({
+            author: req.user.id,
+            title,
+            body,
+            thumbnail
+        }).save()
+
+        res.sendStatus(200);
+    } catch (e) {
+        res.status(500).json({ error: UnknownError })
+    }
+})
+
+postRouter.use("/comment", commentRouter);
 
 export default postRouter;

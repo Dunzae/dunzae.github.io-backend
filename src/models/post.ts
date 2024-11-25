@@ -8,8 +8,13 @@ export interface IPoshSchema {
     },
     title: string,
     body?: string,
+    comments: {
+        author: Schema.Types.ObjectId,
+        content: string,
+        createDate: Date,
+    }[],
     thumbnail?: string,
-    createDate : Date,
+    createDate: Date,
 }
 
 const PostSchema = new Schema<IPoshSchema>({
@@ -35,14 +40,31 @@ const PostSchema = new Schema<IPoshSchema>({
         type: String,
         default: ""
     },
+    comments: {
+        type: [{
+            author: {
+                type: String,
+                required: true
+            },
+            content: {
+                type: String,
+                required: true
+            },
+            createDate: {
+                type: Date,
+                default: Date.now
+            }
+        }],
+        default : []
+    },
     thumbnail: {
         type: String,
         default: undefined,
         required: false,
     },
-    createDate : {
-        type : Date,
-        default : Date.now,
+    createDate: {
+        type: Date,
+        default: Date.now,
     }
 })
 
