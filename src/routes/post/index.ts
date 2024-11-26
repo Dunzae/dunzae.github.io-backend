@@ -147,7 +147,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "images" }]), async (req: Request, res: Response) => {
-    const thumbnail = req.file?.filename;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const { title, body } = req.body;
     const { UnknownError, TitleIsEmpty } = errors;
@@ -165,13 +164,18 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
         }
     }
 
+    let thumbnail = undefined;
+    if (files["thumbnail"] !== undefined) {
+        thumbnail = `${process.env.SERVER_URL}/${files["thumbnail"][0].filename}`
+    } 
+
     try {
         const postModel = model("post", PostSchema);
         await new postModel({
             author: req.user.id,
             title,
             body: newBody,
-            thumbnail
+            thumbnail : thumbnail ? thumbnail : undefined
         }).save()
 
         res.sendStatus(200);
