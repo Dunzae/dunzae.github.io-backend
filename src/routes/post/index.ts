@@ -158,9 +158,9 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
     }
 
     let newBody: string = body as string;
-    if (files !== undefined) {
+    if (files["images"] !== undefined) {
         for (let i = 0; i < files["images"].length; i++) {
-            const newUrl = files.images[i].path.replace("public\\", "");
+            const newUrl = files.images[i].path.replace("public/", "");
             newBody = newBody.replace(/blob:[^"]+/g, process.env.SERVER_URL + "/" + newUrl)
         }
     }
