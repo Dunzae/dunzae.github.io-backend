@@ -47,10 +47,10 @@ postRouter.get("/", async (req: Request<{}, {}, {}, GetPostQueryProps>, res) => 
             title: post.title,
             body: post.body,
             likeNum: post.like.num,
-            comments : post.comments.map(comment => ({
-                author : comment.author,
-                content : comment.content,
-                createDate : comment.createDate
+            comments: post.comments.map(comment => ({
+                author: comment.author,
+                content: comment.content,
+                createDate: comment.createDate
             })),
             thumbnail: post.thumbnail,
             createDate: post.createDate
@@ -132,21 +132,23 @@ interface uploadBody {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/images/thumbnails')
+        if (file.fieldname === "thumbnail") cb(null, 'public/images/thumbnails');
+        else cb(null, "public/images")
     },
     filename: function (req, file, cb) {
         const shasum = crypto.createHash("sha1");
         const name = shasum.update(file.fieldname + Date.now()).digest("hex");
         const temp = file.originalname.split('.')
-        const ext = temp[temp.length - 1]
+        const ext = file.mimetype.split("/")[1];
 
-        cb(null, name + '.' + ext)
+        cb(null, name + "." + ext)
     }
 })
 const upload = multer({ storage });
 
-postRouter.post("/upload", checkMiddleware, upload.single("thumbnail"), async (req: Request, res: Response) => {
+postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "images" }]), async (req: Request, res: Response) => {
     const thumbnail = req.file?.filename;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const { title, body } = req.body;
     const { UnknownError, TitleIsEmpty } = errors;
 
@@ -155,12 +157,20 @@ postRouter.post("/upload", checkMiddleware, upload.single("thumbnail"), async (r
         return;
     }
 
+    let newBody: string = body as string;
+    if (files !== undefined) {
+        for (let i = 0; i < files["images"].length; i++) {
+            const newUrl = files.images[i].path.replace("public\\", "");
+            newBody = newBody.replace(/blob:[^"]+/g, process.env.SERVER_URL + "/" + newUrl)
+        }
+    }
+
     try {
         const postModel = model("post", PostSchema);
         await new postModel({
             author: req.user.id,
             title,
-            body,
+            body: newBody,
             thumbnail
         }).save()
 
