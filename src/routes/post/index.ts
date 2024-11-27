@@ -7,7 +7,7 @@ import PostSchema from "@models/post";
 import isInvalidBody from "@utils/isInvalidBody";
 import checkMiddleware from "@middlewares/check";
 import commentRouter from "./comment";
-import { HTMLElement, parse } from "node-html-parser"
+import { parse } from "node-html-parser"
 
 const postRouter = express.Router();
 
@@ -161,13 +161,17 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
         return;
     }
 
-    let newBody: string = body as string;
+    let root = parse(body);
     if (files["images"] !== undefined) {
         for (let i = 0; i < files["images"].length; i++) {
-            const newUrl = files.images[i].path.replace("public/", "");
-            newBody = newBody.replace(/blob:[^"]+/g, process.env.SERVER_URL + "/" + newUrl)
+            const newUrl = process.env.SERVER_URL + files.images[i].path.replace(/\\/g, "/").replace("public", "")
+            root.querySelectorAll("img")[i].setAttribute("src", newUrl)
         }
     }
+
+    [...root.querySelectorAll("h1")].map((tag, index) => root.querySelectorAll("h1")[index].setAttribute("id", tag.innerText));
+    [...root.querySelectorAll("h2")].map((tag, index) => root.querySelectorAll("h2")[index].setAttribute("id", tag.innerText));
+    [...root.querySelectorAll("h3")].map((tag, index) => root.querySelectorAll("h3")[index].setAttribute("id", tag.innerText));
 
     let thumbnail = undefined;
     if (files["thumbnail"] !== undefined) {
@@ -179,7 +183,7 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
         await new postModel({
             author: req.user.id,
             title,
-            body: newBody,
+            body: root.innerHTML,
             thumbnail: thumbnail ? thumbnail : undefined
         }).save()
 
