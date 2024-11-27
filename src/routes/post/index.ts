@@ -6,8 +6,8 @@ import errors from "@utils/error";
 import PostSchema from "@models/post";
 import isInvalidBody from "@utils/isInvalidBody";
 import checkMiddleware from "@middlewares/check";
-import { stripHtml } from "string-strip-html";
 import commentRouter from "./comment";
+import { HTMLElement, parse } from "node-html-parser"
 
 const postRouter = express.Router();
 
@@ -100,15 +100,20 @@ postRouter.get("/getList", async (req: Request<{}, {}, {}, getListQuery>, res) =
         }
 
         res.json({
-            posts: posts.map(post => ({
-                id: post._id,
-                author: post.author,
-                title: post.title,
-                body: stripHtml(post.body ?? "").result,
-                likeNum: post.like.num,
-                thumbnail: post.thumbnail,
-                createDate: post.createDate,
-            }))
+            posts: posts.map(post => {
+                const text = parse(post.body).text
+                const newBody = text.slice(0, 100) + (text.length > 100 ? "..." : "")
+
+                return {
+                    id: post._id,
+                    author: post.author,
+                    title: post.title,
+                    body: newBody,
+                    likeNum: post.like.num,
+                    thumbnail: post.thumbnail,
+                    createDate: post.createDate,
+                }
+            })
         })
     } catch (e) {
         res.status(500).json({ error: UnknownError })
@@ -167,7 +172,7 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
     let thumbnail = undefined;
     if (files["thumbnail"] !== undefined) {
         thumbnail = `${process.env.SERVER_URL}/${files["thumbnail"][0].filename}`
-    } 
+    }
 
     try {
         const postModel = model("post", PostSchema);
@@ -175,7 +180,7 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
             author: req.user.id,
             title,
             body: newBody,
-            thumbnail : thumbnail ? thumbnail : undefined
+            thumbnail: thumbnail ? thumbnail : undefined
         }).save()
 
         res.sendStatus(200);

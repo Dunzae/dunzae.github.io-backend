@@ -7,7 +7,7 @@ export interface IPoshSchema {
         people: [Schema.Types.ObjectId]
     },
     title: string,
-    body?: string,
+    body: string,
     comments: {
         author: Schema.Types.ObjectId,
         content: string,
