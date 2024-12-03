@@ -169,13 +169,11 @@ postRouter.post("/upload", checkMiddleware, upload.fields([{ name: "thumbnail", 
         }
     }
 
-    [...root.querySelectorAll("h1")].map((tag, index) => root.querySelectorAll("h1")[index].setAttribute("id", tag.innerText));
-    [...root.querySelectorAll("h2")].map((tag, index) => root.querySelectorAll("h2")[index].setAttribute("id", tag.innerText));
-    [...root.querySelectorAll("h3")].map((tag, index) => root.querySelectorAll("h3")[index].setAttribute("id", tag.innerText));
+    [...root.querySelectorAll("h1, h2, h3")].map((tag, index) => root.querySelectorAll("h1, h2, h3")[index].setAttribute("id", tag.innerText));
 
     let thumbnail = undefined;
     if (files["thumbnail"] !== undefined) {
-        thumbnail = `${process.env.SERVER_URL}/${files["thumbnail"][0].filename}`
+        thumbnail = `${process.env.SERVER_URL}/images/thumbnails/${files["thumbnail"][0].filename}`
     }
 
     try {
